@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from utils.auth import pass_gen
+from db.function import pass_gen
 from . import models
 from users import schemas
 
