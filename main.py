@@ -1,12 +1,8 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from auth.test import authenticate_user, get_current_user, User
-from utils.dependencies import get_db
+from fastapi import FastAPI, Depends
+from auth.test import get_current_user, User
 import users.routers
 from db import models
 from db.database import engine
-from sqlalchemy.orm import Session
 
 
 app = FastAPI()

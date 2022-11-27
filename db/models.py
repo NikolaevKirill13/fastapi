@@ -4,6 +4,14 @@ from sqlalchemy.orm import relationship
 from .database import Base
 
 
+Choice = {
+    'admin': 'админ',
+    'manager': 'менеджер',
+    'staff': 'сотрудник',
+    'client': 'клиент'
+}
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -12,3 +20,4 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
+    role = Column(String, choice=Choice, default='client')
