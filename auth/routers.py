@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
-from db.dependencies import get_db
+from db.database import get_db
 from sqlalchemy.orm import Session
 from . import schemas
 from auth.util import authenticate_user, create_access_token

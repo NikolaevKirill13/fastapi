@@ -2,7 +2,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from auth.schemas import User
-from auth.util import get_current_active_user
+#from auth.util import get_current_active_user
 from users.function import pass_gen
 from db import models
 from users import schemas
@@ -23,10 +23,6 @@ async def get_user_by_email(db: Session, email: str):
 
 async def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.User).offset(skip).limit(limit).all()
-
-
-async def get_user_role(current_user: User = Depends(get_current_active_user)):
-    return current_user.role
 
 
 def get_user_hashed_password(db: Session, username: str):
