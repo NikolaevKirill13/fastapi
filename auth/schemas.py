@@ -14,6 +14,7 @@ class User(BaseModel):
     username: str
     email: str
     is_active: bool
+    role: str
 
 
 class UserInDB(User):

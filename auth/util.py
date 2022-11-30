@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from .schemas import *
-from db.dependencies import get_db
+from db.database import get_db
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -29,13 +29,8 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
-    user = get_user_by_username(db, username)
-    return user
-
-
 def authenticate_user(db, username: str, password: str):
-    user = get_user(db, username)
+    user = get_user_by_username(db, username)
     if not user:
         return False
     hashed_password = str(user.hashed_password)
@@ -69,7 +64,7 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(db, username=token_data.username)
+    user = get_user_by_username(db, username=token_data.username)
     if user is None:
         raise credentials_exception
     return user

@@ -1,6 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from auth.util import *
-from db.dependencies import get_db
+from db.database import get_db
 from . import schemas, crud
 
 user_router = APIRouter(
@@ -10,7 +10,7 @@ user_router = APIRouter(
 )
 
 
-@user_router.get("/user/me/")
+@user_router.get("/user/profile/")
 async def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
 
