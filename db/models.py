@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Numeric, Table
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Numeric, Table, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ChoiceType
 
@@ -26,7 +26,7 @@ class Category(Base):
     __tablename__ = "category"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    title = Column(String(64), unique=True, index=True)
+    name = Column(String(64), unique=True, index=True)
     description = Column(String(128))
 
 
@@ -34,19 +34,19 @@ class Nomenclature(Base):
     __tablename__ = "nomenclature"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    category_id = Column(ForeignKey("category.id"))
+    category_name = Column(ForeignKey("category.name"))
     category = relationship("Category")
-    title = Column(String(64), unique=True, index=True)
+    product = Column(String(64), unique=True, index=True)
     description = Column(String(128))
     remainder = Column(Numeric(precision=2, asdecimal=True))
-    price = Column(Numeric(precision=2, asdecimal=True))
-    cart_products = relationship("CartProduct")
+    price = Column(Float)
 
 
-cart_cartproduct = Table("cart_cartproduct", Base.metadata,
-                         Column("cart_id", Integer(), ForeignKey("carts.id")),
-                         Column("cart_product_id", Integer(), ForeignKey("cart_products.id"))
-                         )
+#cart_cartproduct = Table("cart_cartproduct", Base.metadata,
+#                         Column("cart_id", Integer(), ForeignKey("carts.id")),
+#                         Column("cart_product_id", Integer(), ForeignKey("cart_products.id"))
+#                         )
+
 
 class Cart(Base):
     __tablename__ = 'carts'
@@ -67,18 +67,21 @@ class Cart(Base):
         return final
 
 
-class CartProduct(Base):
-    __tablename__ = "cart_products"
+class CartProduct(Nomenclature):
+    __tablename__ = "cart_product"
 
-    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    product_id = Column(ForeignKey("nomenclature.id"))
-    product = relationship("Nomenclature")
-    remainder = Column(Integer, default=0)
-    #price = Column(ForeignKey)  # ?
+    #id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    product_id = Column(ForeignKey("nomenclature.id"), primary_key=True, )
+    products = relationship("Nomenclature", foreign_keys='CartProduct.product_id')
+    remainder_product = Column(Integer, default=0)
+    price_product = Column(Integer, default=0)
     cart_id = Column(ForeignKey("carts.id"))
     final_price = Column(Numeric(precision=2, asdecimal=True))
-    cart = relationship("Cart", secondary=cart_cartproduct, backref="cart_products")
+
+    def get_price(self):
+        self.price_product = self.products_id.price
+        return self.price_product
 
     def get_final_price(self):
-        final_price = self.product_id.price * self.remainder
-        return final_price
+        self.final_price = self.price_product * self.remainder
+        return self.final_price
