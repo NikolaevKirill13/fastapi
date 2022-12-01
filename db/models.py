@@ -30,12 +30,13 @@ class Category(Base):
     description = Column(String(128))
 
 
+
 class Nomenclature(Base):
     __tablename__ = "nomenclature"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    category_name = Column(ForeignKey("category.name"))
-    category = relationship("Category")
+    category_id = Column(ForeignKey("category.id"))
+    category = relationship('Category', foreign_keys='Nomenclature.category_id', lazy='joined')
     product = Column(String(64), unique=True, index=True)
     description = Column(String(128))
     remainder = Column(Numeric(precision=2, asdecimal=True))

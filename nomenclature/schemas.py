@@ -9,7 +9,7 @@ class NomenclatureBase(BaseModel):
 
 class NomenclatureCreate(NomenclatureBase):
     remainder: int
-    category_name = Category
+    category_id: str
     price: int
 
 
@@ -18,7 +18,7 @@ class Nomenclature(BaseModel):
     product: str
     description: str
     remainder: int
-    category_name = Category
+    category_id: str
     price: int
 
     class Config:
