@@ -76,6 +76,7 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     return current_user
 
 
-# @app.get("/users/me/items/")
-async def read_own_items(current_user: User = Depends(get_current_active_user)):
-    return [{"item_id": "Foo", "owner": current_user.username}]
+async def get_user_role(current_user: User = Depends(get_current_user)):
+    if current_user is None:
+        raise HTTPException(status_code=400, detail="Неизвестная ошибка=)")
+    return current_user.role

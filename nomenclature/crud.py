@@ -15,6 +15,10 @@ async def create_category(db: Session, category: CategoryCreate):
     return db_category
 
 
+async def get_category_products(db: Session, title: str):
+    return db.query(Category).filter(Category.title == title).all()
+
+
 async def get_nomenclature(db: Session):
     return db.query(Nomenclature).all()
 
