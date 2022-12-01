@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from db.models import Category
 
 
 class NomenclatureBase(BaseModel):
@@ -9,7 +8,7 @@ class NomenclatureBase(BaseModel):
 
 class NomenclatureCreate(NomenclatureBase):
     remainder: int
-    category_id: str
+    category_title: str
     price: int
 
 
@@ -18,8 +17,20 @@ class Nomenclature(BaseModel):
     product: str
     description: str
     remainder: int
-    category_id: str
+    category_title: str
     price: int
+
+    class Config:
+        orm_mode = True
+
+
+class CategoryCreate(BaseModel):
+    title: str
+    description: str
+
+
+class Category(CategoryCreate):
+    id: int
 
     class Config:
         orm_mode = True

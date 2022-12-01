@@ -26,17 +26,16 @@ class Category(Base):
     __tablename__ = "category"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    name = Column(String(64), unique=True, index=True)
+    title = Column(String(64), unique=True, index=True)
     description = Column(String(128))
-
 
 
 class Nomenclature(Base):
     __tablename__ = "nomenclature"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    category_id = Column(ForeignKey("category.id"))
-    category = relationship('Category', foreign_keys='Nomenclature.category_id', lazy='joined')
+    category_title = Column(ForeignKey("category.title"))
+    category = relationship('Category', foreign_keys='Nomenclature.category_title', lazy='joined')
     product = Column(String(64), unique=True, index=True)
     description = Column(String(128))
     remainder = Column(Numeric(precision=2, asdecimal=True))
@@ -75,9 +74,9 @@ class CartProduct(Nomenclature):
     product_id = Column(ForeignKey("nomenclature.id"), primary_key=True, )
     products = relationship("Nomenclature", foreign_keys='CartProduct.product_id')
     remainder_product = Column(Integer, default=0)
-    price_product = Column(Integer, default=0)
+    price_product = Column(Float)
     cart_id = Column(ForeignKey("carts.id"))
-    final_price = Column(Numeric(precision=2, asdecimal=True))
+    final_price = Column(Float)
 
     def get_price(self):
         self.price_product = self.products_id.price
