@@ -7,6 +7,15 @@ async def get_category(db: Session):
     return db.query(Category).all()
 
 
+async def get_test(db: Session, modely, cretery):
+    first = db.query(modely)
+    run = modely.title
+    print(run)
+    two = f'{db.query(modely).filter(run == cretery).all()}'
+    print(two)
+    return two
+
+
 async def create_category(db: Session, category: CategoryCreate):
     db_category = Category(title=category.title, description=category.description)
     db.add(db_category)
