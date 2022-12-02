@@ -8,7 +8,7 @@ from db import models
 from users import schemas
 
 
-async def get_user(db: Session, user_id: int):
+async def get_user_by_id(db: Session, user_id: int):
     #user = db.query(models.User).filter(models.User.id == user_id).first()
     return db.query(models.User).filter(models.User.id == user_id).first()
 

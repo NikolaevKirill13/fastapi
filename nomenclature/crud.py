@@ -7,15 +7,6 @@ async def get_category(db: Session):
     return db.query(Category).all()
 
 
-async def get_test(db: Session, modely, cretery):
-    first = db.query(modely)
-    run = modely.title
-    print(run)
-    two = f'{db.query(modely).filter(run == cretery).all()}'
-    print(two)
-    return two
-
-
 async def create_category(db: Session, category: CategoryCreate):
     db_category = Category(title=category.title, description=category.description)
     db.add(db_category)
@@ -34,6 +25,10 @@ async def get_nomenclature(db: Session):
 
 async def get_nomenclature_by_product(db: Session, product: str):
     return db.query(Nomenclature).filter(Nomenclature.product == product).first()
+
+
+async def get_nomenclature_by_category(db: Session, category: str):
+    return db.query(Nomenclature).filter(Nomenclature.category_title == category).all()
 
 
 async def create_nomenclature(db: Session, nomenclature: NomenclatureCreate):
