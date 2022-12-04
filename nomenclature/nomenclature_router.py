@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from . import crud, schemas
+from decorator import role_required
 from db.database import get_db
 
 
@@ -43,7 +44,6 @@ async def create_nomenclature(nomenclature: schemas.NomenclatureCreate, db: Sess
 
 @nomenclature_router.post("/nomenclatures")
 async def create_nomenclatures(nomenclatures: list[schemas.NomenclatureCreate], db: Session = Depends(get_db)):
-    print(nomenclatures)
     for i in nomenclatures:
         await crud.create_nomenclatures(db=db,
                                         product=i.product,
@@ -51,4 +51,5 @@ async def create_nomenclatures(nomenclatures: list[schemas.NomenclatureCreate], 
                                         remainder=i.remainder,
                                         category_title=i.category_title,
                                         price=i.price)
+
     return nomenclatures

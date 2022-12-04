@@ -12,6 +12,7 @@ user_router = APIRouter(
 
 @user_router.get("/user/profile/")
 async def read_users_me(current_user: User = Depends(get_current_active_user)):
+    print(current_user.role)
     return current_user
 
 

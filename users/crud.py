@@ -1,15 +1,10 @@
-from fastapi import Depends
 from sqlalchemy.orm import Session
-
-from auth.schemas import User
-#from auth.util import get_current_active_user
 from users.function import pass_gen
 from db import models
 from users import schemas
 
 
 async def get_user_by_id(db: Session, user_id: int):
-    #user = db.query(models.User).filter(models.User.id == user_id).first()
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 
