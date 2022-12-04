@@ -1,17 +1,14 @@
-import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from . import crud, schemas
-from decorator import role_required
 from db.database import get_db
+from auth.util import get_current_active_user
 
 
-nomenclature_router = APIRouter(prefix="",
-                                dependencies=[Depends(get_db)],
-                                responses={404: {"description": "Not found"}},
-                                )
+nomenclature_router = APIRouter(prefix="", dependencies=[Depends(get_db)], responses={404:{"description": "Not found"}})
 
+#  попробовать дописать зависимость get_user_role к декоратору пути
 
 @nomenclature_router.get("/category", response_model=list[schemas.Category])
 async def read_categories(db: Session = Depends(get_db)):
