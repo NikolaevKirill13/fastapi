@@ -54,6 +54,8 @@ class Cart(Base):
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     user_id = Column(ForeignKey("user.id"))
     user = relationship("User")
+    payment = Column(Boolean, default=False)
+    
 
     def get_products(self):
         products = self.id.cart_products

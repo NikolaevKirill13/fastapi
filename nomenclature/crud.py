@@ -3,7 +3,7 @@ from db.models import Nomenclature, Category
 from .schemas import NomenclatureCreate, CategoryCreate
 
 
-async def get_category(db: Session):
+async def get_categories(db: Session):
     return db.query(Category).all()
 
 
@@ -35,6 +35,15 @@ async def create_nomenclature(db: Session, nomenclature: NomenclatureCreate):
     db_nomenclature = Nomenclature(product=nomenclature.product, description=nomenclature.description,
                                    remainder=nomenclature.remainder, category_title=nomenclature.category_title,
                                    price=nomenclature.price)
+    db.add(db_nomenclature)
+    db.commit()
+    db.refresh(db_nomenclature)
+    return db_nomenclature
+
+
+async def create_nomenclatures(db: Session, product, description, remainder, category_title, price):
+    db_nomenclature = Nomenclature(product=product, description=description, remainder=remainder,
+                                   category_title=category_title, price=price)
     db.add(db_nomenclature)
     db.commit()
     db.refresh(db_nomenclature)

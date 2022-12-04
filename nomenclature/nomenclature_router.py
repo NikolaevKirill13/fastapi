@@ -1,5 +1,7 @@
+import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
 from . import crud, schemas
 from db.database import get_db
 
@@ -12,7 +14,7 @@ nomenclature_router = APIRouter(prefix="",
 
 @nomenclature_router.get("/category", response_model=list[schemas.Category])
 async def read_categories(db: Session = Depends(get_db)):
-    return await crud.get_category(db)
+    return await crud.get_categories(db)
 
 
 @nomenclature_router.get("/category/{title}", response_model=list[schemas.Nomenclature])
@@ -38,3 +40,15 @@ async def create_nomenclature(nomenclature: schemas.NomenclatureCreate, db: Sess
     #    raise HTTPException(status_code=400, detail="ТАкое уже есть, надо добавлять кол-во")
     return await crud.create_nomenclature(db=db, nomenclature=nomenclature)
 
+
+@nomenclature_router.post("/nomenclatures")
+async def create_nomenclatures(nomenclatures: list[schemas.NomenclatureCreate], db: Session = Depends(get_db)):
+    print(nomenclatures)
+    for i in nomenclatures:
+        await crud.create_nomenclatures(db=db,
+                                        product=i.product,
+                                        description=i.description,
+                                        remainder=i.remainder,
+                                        category_title=i.category_title,
+                                        price=i.price)
+    return nomenclatures

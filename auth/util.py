@@ -80,3 +80,4 @@ async def get_user_role(current_user: User = Depends(get_current_user)):
     if current_user is None:
         raise HTTPException(status_code=400, detail="Неизвестная ошибка=)")
     return current_user.role
+
