@@ -3,17 +3,21 @@ from sqlalchemy.orm import Session
 from typing import List
 from . import crud, schemas
 from db.database import get_db
-from auth.util import get_user_role, chek_role
+from auth.util import get_user_role, check_role
 
 nomenclature_router = APIRouter(prefix="", dependencies=[Depends(get_db)], responses={404:{"description": "Not found"}})
 
 #  попробовать дописать зависимость get_user_role к декоратору пути
 
 @nomenclature_router.get("/category", response_model=list[schemas.Category])
-async def read_categories(db: Session = Depends(get_db), role=Depends(get_user_role)):
-    if role != 'admin':
-        raise HTTPException(status_code=403, detail="Forbidden")
-    return await crud.get_categories(db)
+async def read_categories(db: Session = Depends(get_db), role=Depends(get_user_role), roles=('manager', 'admin')):
+    for i in roles:
+        if role == i:  # мне не нравится это, н что-то пока не получается по нормальному=(
+            return await crud.get_categories(db)  # хотя оно работает, но было бы здорово сделать декоратор
+    raise HTTPException(status_code=403, detail="Forbidden")
+
+
+    #return await crud.get_categories(db)
 
 
 @nomenclature_router.get("/category/{title}", response_model=list[schemas.Nomenclature])

@@ -81,10 +81,7 @@ async def get_user_role(current_user: User = Depends(get_current_user)):
     return current_user.role
 
 
-async def chek_role(*role):
-    def chek(db: Session = Depends(get_db), roles=Depends(get_user_role)):
-        for i in role:
-            if i == roles.role:
-                return True
-        return False
-    return chek
+async def check_role(db: Session = Depends(get_db), role=Depends(get_user_role)):
+
+    print(role)
+
