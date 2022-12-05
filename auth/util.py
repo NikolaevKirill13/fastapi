@@ -82,6 +82,16 @@ async def get_user_role(current_user: User = Depends(get_current_user)):
 
 
 async def check_role(db: Session = Depends(get_db), role=Depends(get_user_role)):
-
     print(role)
 
+
+def role_required(*group_names):
+    def in_role(role: User = Depends(get_current_user)):
+        for i in group_names:
+            if role == i:
+                return True
+        return False
+
+    return in_role(*group_names)
+
+# @group_required('personal',)
