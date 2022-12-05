@@ -16,7 +16,6 @@ SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE = 30
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -78,5 +77,14 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
 
 async def get_user_role(current_user: User = Depends(get_current_user)):
     if current_user is None:
-        raise HTTPException(status_code=400, detail="Неизвестная ошибка=)")
+        raise HTTPException(status_code=401, detail="Unauthorized")
     return current_user.role
+
+
+async def chek_role(*role):
+    def chek(db: Session = Depends(get_db), roles=Depends(get_user_role)):
+        for i in role:
+            if i == roles.role:
+                return True
+        return False
+    return chek
