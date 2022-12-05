@@ -4,7 +4,7 @@ from typing import List
 from .schemas import Category
 from . import crud, schemas
 from db.database import get_db
-from auth.util import get_user_role, role_required
+from auth.util import get_user_role, get_role_user, get_role_manager
 
 nomenclature_router = APIRouter(prefix="", dependencies=[Depends(get_db)], responses={404:{"description": "Not found"}})
 
@@ -18,6 +18,15 @@ async def read_categories(db: Session = Depends(get_db), role=Depends(get_user_r
     raise HTTPException(status_code=403, detail="Forbidden")
 
 
+@nomenclature_router.get("/category_test", response_model=list[schemas.Category])
+async def read_categories_test(db: Session = Depends(get_db), role=(Depends(get_role_user), Depends(get_role_manager))):
+    print(role)
+    for i in role:
+        if i:
+            return await crud.get_categories(db)  # с 1 зависимостью работает, с 2 нет(
+    raise HTTPException(status_code=403, detail="Forbidden")
+
+
 @nomenclature_router.get("/category/{title}", response_model=list[schemas.Nomenclature])
 async def get_category_products(category: str, db: Session = Depends(get_db)):
     return await crud.get_nomenclature_by_category(db, category)
@@ -26,7 +35,6 @@ async def get_category_products(category: str, db: Session = Depends(get_db)):
 @nomenclature_router.post("/category", response_model=schemas.Category)
 async def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db)):
     return await crud.create_category(db=db, category=category)
-
 
 @nomenclature_router.get('/nomenclature', response_model=list[schemas.Nomenclature])
 async def read_nomenclatures(db: Session = Depends(get_db)):
