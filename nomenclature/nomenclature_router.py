@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
-from .schemas import Category
 from . import crud, schemas
 from db.database import get_db
-from auth.util import get_user_role, get_role_user, get_role_manager
+from auth.util import get_user_role, get_role_user, get_role_manager, permission_req
 
-nomenclature_router = APIRouter(prefix="", dependencies=[Depends(get_db)], responses={404:{"description": "Not found"}})
+nomenclature_router = APIRouter(prefix="", dependencies=[Depends(get_db)],
+                                responses={404: {"description": "Not found"}})
 
-#  попробовать дописать зависимость get_user_role к декоратору пути
 
 @nomenclature_router.get("/category", response_model=list[schemas.Category])
 async def read_categories(db: Session = Depends(get_db), role=Depends(get_user_role), roles=('manager', 'user')):
@@ -19,11 +17,9 @@ async def read_categories(db: Session = Depends(get_db), role=Depends(get_user_r
 
 
 @nomenclature_router.get("/category_test", response_model=list[schemas.Category])
-async def read_categories_test(db: Session = Depends(get_db), role=(Depends(get_role_user), Depends(get_role_manager))):
-    print(role)
-    for i in role:
-        if i:
-            return await crud.get_categories(db)  # с 1 зависимостью работает, с 2 нет(
+async def read_categories_test(db: Session = Depends(get_db), permissions=('manager', 'admin'), role=Depends(get_role_user)):
+    if await permission_req(role, permissions):
+        return await crud.get_categories(db)  # с 1 зависимостью работает, с 2 нет(
     raise HTTPException(status_code=403, detail="Forbidden")
 
 
@@ -35,6 +31,7 @@ async def get_category_products(category: str, db: Session = Depends(get_db)):
 @nomenclature_router.post("/category", response_model=schemas.Category)
 async def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db)):
     return await crud.create_category(db=db, category=category)
+
 
 @nomenclature_router.get('/nomenclature', response_model=list[schemas.Nomenclature])
 async def read_nomenclatures(db: Session = Depends(get_db)):

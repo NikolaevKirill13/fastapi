@@ -81,27 +81,23 @@ async def get_user_role(current_user: User = Depends(get_current_user)):
     return current_user.role
 
 
-async def check_role(db: Session = Depends(get_db), role=Depends(get_user_role)):
-    print(role)
-
-
-def role_required(function):
-    def wrapper(**kwargs):
-        print(kwargs)
-
-        function()
-    return wrapper
-
-
 async def get_role_manager(current_user: User = Depends(get_current_user)):
     if current_user.role == 'manager':
-        print(current_user.role)
         return current_user.role
     return None
 
 
 async def get_role_user(current_user: User = Depends(get_current_user)):
     if current_user.role == 'user':
-        print(current_user.role)
         return current_user.role
     return None
+
+
+async def get_role(current_user: User = Depends(get_current_user)):
+    return current_user.role
+
+
+async def permission_req(role, permissions):
+    for i in permissions:
+        if i == role:
+            return True
