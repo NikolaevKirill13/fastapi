@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Numeric, Table, Float
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Numeric, DateTime, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ChoiceType
 
@@ -42,12 +42,6 @@ class Nomenclature(Base):
     price = Column(Float)
 
 
-#cart_cartproduct = Table("cart_cartproduct", Base.metadata,
-#                         Column("cart_id", Integer(), ForeignKey("carts.id")),
-#                         Column("cart_product_id", Integer(), ForeignKey("cart_products.id"))
-#                         )
-
-
 class Cart(Base):
     __tablename__ = 'carts'
 
@@ -55,7 +49,6 @@ class Cart(Base):
     user_id = Column(ForeignKey("user.id"))
     user = relationship("User")
     payment = Column(Boolean, default=False)
-    
 
     def get_products(self):
         products = self.id.cart_products
@@ -72,8 +65,7 @@ class Cart(Base):
 class CartProduct(Nomenclature):
     __tablename__ = "cart_product"
 
-    #id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    product_id = Column(ForeignKey("nomenclature.id"), primary_key=True, )
+    product_id = Column(ForeignKey("nomenclature.id"), primary_key=True, index=True)
     products = relationship("Nomenclature", foreign_keys='CartProduct.product_id')
     remainder_product = Column(Integer, default=0)
     price_product = Column(Float)
@@ -87,3 +79,23 @@ class CartProduct(Nomenclature):
     def get_final_price(self):
         self.final_price = self.price_product * self.remainder
         return self.final_price
+
+
+class Arrival(Base):
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    receipt_date = Column(DateTime)
+    # provaider =
+    # reason =
+    incoming_number = Column(String(64), index=True)
+    product = Column(String(128), index=True, nullable=False)
+    remainder = Column(Float, nullable=False)
+    price = Column(Float, nullable=False)
+
+
+class OrderToSupplier(Base):
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    receipt_date = Column(DateTime)
+    provaider = Column(String)
+    product = Column(String(128), index=True, nullable=False)
+    remainder = Column(Float, nullable=False)
+    price = Column(Float, nullable=False)
