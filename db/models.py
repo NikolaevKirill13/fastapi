@@ -22,6 +22,27 @@ class User(Base):
     role = Column(ChoiceType(TYPES), default='user')
 
 
+
+class CompanyClient(Base):
+    __tablename__ = 'company_clients'
+
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    company_name = Column(String(64), unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    phone = Column(String(32), unique=True, nullable=False)
+    contact_name = Column(String(32), nullable=True)
+    hashed_password = Column(String)
+    is_active = Column(Boolean, default=True)
+
+
+class ClientScore(Base):
+    __tablename__ = 'client_score'
+
+    company_id = Column(ForeignKey("company_clients.id"))
+    company = relationship('CompanyClient', foreign_keys='ClientScore.company_id', lazy='joined')
+    remainder = Column(Float)
+
+
 class Category(Base):
     __tablename__ = "category"
 
@@ -36,7 +57,7 @@ class Nomenclature(Base):
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     category_title = Column(ForeignKey("category.title"))
     category = relationship('Category', foreign_keys='Nomenclature.category_title', lazy='joined')
-    product = Column(String(64), unique=True, index=True)
+    product = Column(String(64), unique=True, index=True, nullable=False)
     description = Column(String(128))
     remainder = Column(Numeric(precision=2, asdecimal=True))
     price = Column(Float)
@@ -46,8 +67,8 @@ class Cart(Base):
     __tablename__ = 'carts'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    user_id = Column(ForeignKey("user.id"))
-    user = relationship("User")
+    client_id = Column(ForeignKey("company_clients.id"))
+    client = relationship("CompanyClient", foreign_keys='Cart.client_id', lazy='joined')
     payment = Column(Boolean, default=False)
 
     def get_products(self):
@@ -81,21 +102,23 @@ class CartProduct(Nomenclature):
         return self.final_price
 
 
-class Arrival(Base):
+class OrderToSupplier(Base):
+    __tablename__ = 'order_to_supplier'
+
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     receipt_date = Column(DateTime)
-    # provaider =
-    # reason =
-    incoming_number = Column(String(64), index=True)
+    provaider = Column(String)
     product = Column(String(128), index=True, nullable=False)
     remainder = Column(Float, nullable=False)
     price = Column(Float, nullable=False)
 
 
-class OrderToSupplier(Base):
+class Arrival(Base):
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     receipt_date = Column(DateTime)
-    provaider = Column(String)
+    reason_id = Column(ForeignKey('order_to_supplier.id'))
+    reason = relationship("OrderToSupplier", foreign_keys="Arrival.reason_id")
+    incoming_number = Column(String(64), index=True)
     product = Column(String(128), index=True, nullable=False)
     remainder = Column(Float, nullable=False)
     price = Column(Float, nullable=False)
