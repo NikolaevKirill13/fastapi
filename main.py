@@ -6,7 +6,6 @@ import nomenclature.nomenclature_router
 import users.users_routers
 from db import models
 from db.database import engine, get_db
-from users.crud import get_user_by_username
 
 app = FastAPI()
 
@@ -18,6 +17,7 @@ app.include_router(nomenclature.nomenclature_router.nomenclature_router)
 
 @app.on_event("startup")
 async def startup():
+    #models.Base.metadata.create_all(bind=engine)
     print('админа нет')
 """надо получить админа из .env и сверить с дб, если дб нет - создать дб с моделями
     и добавить туда главного админа. если дб есть - проверить наличие админа, если нет - создать"""
