@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Numeric, DateTime, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ChoiceType
-
+import datetime
 from .database import Base
 
 
@@ -22,9 +22,8 @@ class User(Base):
     role = Column(ChoiceType(TYPES), default='user')
 
 
-
-class CompanyClient(Base):
-    __tablename__ = 'company_clients'
+class AgentContragent(Base): #  дурацкое название, но лучше мне не придумать
+    __tablename__ = 'agent_contragent'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     company_name = Column(String(64), unique=True, index=True, nullable=False)
@@ -38,8 +37,9 @@ class CompanyClient(Base):
 class ClientScore(Base):
     __tablename__ = 'client_score'
 
-    company_id = Column(ForeignKey("company_clients.id"))
-    company = relationship('CompanyClient', foreign_keys='ClientScore.company_id', lazy='joined')
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    company_id = Column(ForeignKey("agent_contragent.id"))
+    company = relationship('AgentContragent', foreign_keys='ClientScore.company_id', lazy='joined')
     remainder = Column(Float)
 
 
@@ -47,7 +47,7 @@ class Category(Base):
     __tablename__ = "category"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    title = Column(String(64), unique=True, index=True)
+    title = Column(String(64), unique=True, index=True, nullable=False)
     description = Column(String(128))
 
 
@@ -60,15 +60,15 @@ class Nomenclature(Base):
     product = Column(String(64), unique=True, index=True, nullable=False)
     description = Column(String(128))
     remainder = Column(Numeric(precision=2, asdecimal=True))
-    price = Column(Float)
+    price = Column(Float, nullable=False)
 
 
 class Cart(Base):
     __tablename__ = 'carts'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    client_id = Column(ForeignKey("company_clients.id"))
-    client = relationship("CompanyClient", foreign_keys='Cart.client_id', lazy='joined')
+    client_id = Column(ForeignKey("agent_contragent.id"))
+    client = relationship("AgentContragent", foreign_keys='Cart.client_id', lazy='joined')
     payment = Column(Boolean, default=False)
 
     def get_products(self):
@@ -89,9 +89,9 @@ class CartProduct(Nomenclature):
     product_id = Column(ForeignKey("nomenclature.id"), primary_key=True, index=True)
     products = relationship("Nomenclature", foreign_keys='CartProduct.product_id')
     remainder_product = Column(Integer, default=0)
-    price_product = Column(Float)
+    price_product = Column(Float, nullable=False)
     cart_id = Column(ForeignKey("carts.id"))
-    final_price = Column(Float)
+    final_price = Column(Float, nullable=False)
 
     def get_price(self):
         self.price_product = self.products_id.price
@@ -114,6 +114,7 @@ class OrderToSupplier(Base):
 
 
 class Arrival(Base):
+    __tablename__ = 'arrival'
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     receipt_date = Column(DateTime)
     reason_id = Column(ForeignKey('order_to_supplier.id'))
