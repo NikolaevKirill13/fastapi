@@ -14,3 +14,4 @@ DATABASES = {
 
 admin_login = os.getenv("LOGIN")
 admin_password = os.getenv("PASSWORD")
+admin_email = os.getenv("EMAIL")

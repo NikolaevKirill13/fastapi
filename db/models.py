@@ -22,8 +22,8 @@ class User(Base):
     role = Column(ChoiceType(TYPES), default='user')
 
 
-class AgentContragent(Base): #  дурацкое название, но лучше мне не придумать
-    __tablename__ = 'agent_contragent'
+class Client(Base): #  дурацкое название, но лучше мне не придумать
+    __tablename__ = 'client'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     company_name = Column(String(64), unique=True, index=True, nullable=False)
@@ -34,12 +34,29 @@ class AgentContragent(Base): #  дурацкое название, но лучш
     is_active = Column(Boolean, default=True)
 
 
+class Provaider(Base):
+    __tablename__ = 'provaider'
+
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    name = Column(String(64), unique=True, index=True, nullable=False)
+
+
+class Address(Base):
+    __tablename__ = 'addresses'
+
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    client_id = Column(ForeignKey("client.id"))
+    client = relationship("Client", foreign_keys="Address.client_id", lazy='joined')
+    addres = Column(String)
+    contact_phone = Column(String(24))
+
+
 class ClientScore(Base):
     __tablename__ = 'client_score'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    company_id = Column(ForeignKey("agent_contragent.id"))
-    company = relationship('AgentContragent', foreign_keys='ClientScore.company_id', lazy='joined')
+    client_id = Column(ForeignKey("client.id"))
+    client = relationship('Client', foreign_keys='ClientScore.client_id', lazy='joined')
     remainder = Column(Float)
 
 
@@ -67,8 +84,8 @@ class Cart(Base):
     __tablename__ = 'carts'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    client_id = Column(ForeignKey("agent_contragent.id"))
-    client = relationship("AgentContragent", foreign_keys='Cart.client_id', lazy='joined')
+    client_id = Column(ForeignKey("client.id"))
+    client = relationship("Client", foreign_keys='Cart.client_id', lazy='joined')
     payment = Column(Boolean, default=False)
 
     def get_products(self):
@@ -106,20 +123,20 @@ class OrderToSupplier(Base):
     __tablename__ = 'order_to_supplier'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    receipt_date = Column(DateTime)
+    incoming_number = Column(String(64), index=True)
     provaider = Column(String)
-    product = Column(String(128), index=True, nullable=False)
-    remainder = Column(Float, nullable=False)
-    price = Column(Float, nullable=False)
+    order_date = Column(DateTime)
 
 
 class Arrival(Base):
     __tablename__ = 'arrival'
+
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    receipt_date = Column(DateTime)
-    reason_id = Column(ForeignKey('order_to_supplier.id'))
-    reason = relationship("OrderToSupplier", foreign_keys="Arrival.reason_id")
-    incoming_number = Column(String(64), index=True)
+    date = Column(DateTime)
+    order_id = Column(ForeignKey("order_to_supplier.id"))
+    order = relationship("OrderToSupplier", foreign_keys="Arrival.order_id", lazy='joined')
     product = Column(String(128), index=True, nullable=False)
     remainder = Column(Float, nullable=False)
     price = Column(Float, nullable=False)
+    received = Column(Boolean, default=False)
+
