@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Numeric, DateTime, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ChoiceType
-import datetime
+from datetime import datetime
 from .database import Base
 
 
@@ -32,6 +32,9 @@ class Client(Base): #  дурацкое название, но лучше мне
     contact_name = Column(String(32), nullable=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
+    adresses = relationship("Address")
+    score = relationship("ClientScore", uselist=False)
+    cart = relationship("Cart", uselist=False)
 
 
 class Provaider(Base):
@@ -66,6 +69,7 @@ class Category(Base):
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     title = Column(String(64), unique=True, index=True, nullable=False)
     description = Column(String(128))
+    products = relationship("Nomenclature")
 
 
 class Nomenclature(Base):
@@ -87,6 +91,7 @@ class Cart(Base):
     client_id = Column(ForeignKey("client.id"))
     client = relationship("Client", foreign_keys='Cart.client_id', lazy='joined')
     payment = Column(Boolean, default=False)
+    products = relationship("CartProducts")
 
     def get_products(self):
         products = self.id.cart_products
@@ -124,15 +129,16 @@ class OrderToSupplier(Base):
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     incoming_number = Column(String(64), index=True)
-    provaider = Column(String)
+    supplier = Column(String)
     order_date = Column(DateTime)
+    arrivals = relationship("Arrival")
 
 
 class Arrival(Base):
     __tablename__ = 'arrival'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    date = Column(DateTime)
+    date = Column(DateTime(), default=datetime.now)
     order_id = Column(ForeignKey("order_to_supplier.id"))
     order = relationship("OrderToSupplier", foreign_keys="Arrival.order_id", lazy='joined')
     product = Column(String(128), index=True, nullable=False)
