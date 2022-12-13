@@ -7,12 +7,11 @@ class OrderCreate(BaseModel):
 
 
 class Order(OrderCreate):
-    id: int
     date: str
 
 
 class ArrivalBase(BaseModel):
-    order_id: int
+    order_number: str
     product: str
 
 

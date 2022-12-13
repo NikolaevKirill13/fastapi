@@ -8,10 +8,13 @@ from .database import Base
 class User(Base):
     __tablename__ = "user"
 
-    TYPES = [
-        ('admin', 'Admin'),
-        ('manager', 'Manager'),
-        ('user', 'user')
+    USERS = [
+        ('admin', 'Администратор'),
+        ('top_manager', 'Главный менеджер'),
+        ('user', 'Пользователь'),
+        ('sales_manager', 'Менеджер по продажам'),
+        ('purchasing_manager', 'Менеджер по закупкам'),
+        ('warehouse_manager', 'Менеджер склада'),
     ]
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
@@ -19,10 +22,10 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
-    role = Column(ChoiceType(TYPES), default='user')
+    role = Column(ChoiceType(USERS), default='user')
 
 
-class Client(Base): #  дурацкое название, но лучше мне не придумать
+class Client(Base):
     __tablename__ = 'client'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
@@ -32,16 +35,25 @@ class Client(Base): #  дурацкое название, но лучше мне
     contact_name = Column(String(32), nullable=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
-    adresses = relationship("Address")
+    discount = Column(Float(precision=2))
+    address = relationship("Address")
     score = relationship("ClientScore", uselist=False)
     cart = relationship("Cart", uselist=False)
 
 
-class Provaider(Base):
-    __tablename__ = 'provaider'
+class FinancialDataOfOrganizations(Base):
+    __tablename__ = 'document_organizacions'
+
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    # надо дозаполнить
+
+
+class Supplier(Base):
+    __tablename__ = 'supplier'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     name = Column(String(64), unique=True, index=True, nullable=False)
+    orders = relationship("OrderToSupplier")
 
 
 class Address(Base):
@@ -50,7 +62,7 @@ class Address(Base):
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     client_id = Column(ForeignKey("client.id"))
     client = relationship("Client", foreign_keys="Address.client_id", lazy='joined')
-    addres = Column(String)
+    address = Column(String)
     contact_phone = Column(String(24))
 
 
@@ -108,11 +120,12 @@ class Cart(Base):
 class CartProduct(Nomenclature):
     __tablename__ = "cart_product"
 
-    product_id = Column(ForeignKey("nomenclature.id"), primary_key=True, index=True)
+    product_id = Column(ForeignKey("nomenclature.product"), primary_key=True, index=True)
     products = relationship("Nomenclature", foreign_keys='CartProduct.product_id')
     remainder_product = Column(Integer, default=0)
     price_product = Column(Float, nullable=False)
     cart_id = Column(ForeignKey("carts.id"))
+    cart = relationship("Cart", foreign_keys="CartProduct.cart_id")
     final_price = Column(Float, nullable=False)
 
     def get_price(self):
@@ -129,8 +142,9 @@ class OrderToSupplier(Base):
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     incoming_number = Column(String(64), index=True)
-    supplier = Column(String)
-    order_date = Column(DateTime)
+    supplier_name = Column(ForeignKey("supplier.name"))
+    supplier = relationship("Supplier", foreign_keys="OrderToSupplier.supplier_name", lazy='joined')
+    order_date = Column(DateTime, default=datetime.now)
     arrivals = relationship("Arrival")
 
 
@@ -139,8 +153,8 @@ class Arrival(Base):
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     date = Column(DateTime(), default=datetime.now)
-    order_id = Column(ForeignKey("order_to_supplier.id"))
-    order = relationship("OrderToSupplier", foreign_keys="Arrival.order_id", lazy='joined')
+    order_number = Column(ForeignKey("order_to_supplier.incoming_number"))
+    order = relationship("OrderToSupplier", foreign_keys="Arrival.order_number", lazy='joined')
     product = Column(String(128), index=True, nullable=False)
     remainder = Column(Float, nullable=False)
     price = Column(Float, nullable=False)
