@@ -42,7 +42,7 @@ class Client(Base):
 
 
 class FinancialDataOfOrganizations(Base):
-    __tablename__ = 'document_organizacions'
+    __tablename__ = 'document_organizations'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     # надо дозаполнить
