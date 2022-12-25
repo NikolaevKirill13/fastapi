@@ -1,5 +1,3 @@
-from fastapi import Depends
-from auth.schemas import User
 from passlib.context import CryptContext
 
 

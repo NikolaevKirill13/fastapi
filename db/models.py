@@ -5,6 +5,18 @@ from datetime import datetime
 from .database import Base
 
 
+class Preference(Base):
+    __tablename__ = "preference"
+
+    company_name = Column(String(64), primary_key=True)
+    # дозаполнить
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super().__new__(cls)
+        return cls.__instance
+
+
 class User(Base):
     __tablename__ = "user"
 
@@ -36,9 +48,9 @@ class Client(Base):
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
     discount = Column(Float(precision=2))
-    address = relationship("Address")
+    address = relationship("Address", cascade="all, delete", passive_deletes=True)
     score = relationship("ClientScore", uselist=False)
-    cart = relationship("Cart", uselist=False)
+    cart = relationship("Cart", uselist=False, cascade="all, delete", passive_deletes=True)
 
 
 class FinancialDataOfOrganizations(Base):
@@ -60,7 +72,7 @@ class Address(Base):
     __tablename__ = 'addresses'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    client_id = Column(ForeignKey("client.id"))
+    client_id = Column(ForeignKey("client.id", ondelete="CASCADE"))
     client = relationship("Client", foreign_keys="Address.client_id", lazy='joined')
     address = Column(String)
     contact_phone = Column(String(24))
@@ -70,7 +82,7 @@ class ClientScore(Base):
     __tablename__ = 'client_score'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    client_id = Column(ForeignKey("client.id"))
+    client_id = Column(ForeignKey("client.id", ondelete="NULL"))
     client = relationship('Client', foreign_keys='ClientScore.client_id', lazy='joined')
     remainder = Column(Float)
 
@@ -88,7 +100,7 @@ class Nomenclature(Base):
     __tablename__ = "nomenclature"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    category_title = Column(ForeignKey("category.title"))
+    category_title = Column(ForeignKey("category.title", ondelete="NULL"))
     category = relationship('Category', foreign_keys='Nomenclature.category_title', lazy='joined')
     product = Column(String(64), unique=True, index=True, nullable=False)
     description = Column(String(128))
@@ -100,10 +112,10 @@ class Cart(Base):
     __tablename__ = 'carts'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    client_id = Column(ForeignKey("client.id"))
+    client_id = Column(ForeignKey("client.id", ondelete="CASCADE"))
     client = relationship("Client", foreign_keys='Cart.client_id', lazy='joined')
     payment = Column(Boolean, default=False)
-    products = relationship("CartProducts")
+    products = relationship("CartProducts", cascade="all, delete", passive_deletes=True)
 
     def get_products(self):
         products = self.id.cart_products
@@ -120,11 +132,11 @@ class Cart(Base):
 class CartProduct(Nomenclature):
     __tablename__ = "cart_product"
 
-    product_id = Column(ForeignKey("nomenclature.product"), primary_key=True, index=True)
+    product_id = Column(ForeignKey("nomenclature.product", ondelete="CASCADE"), primary_key=True, index=True)
     products = relationship("Nomenclature", foreign_keys='CartProduct.product_id')
     remainder_product = Column(Integer, default=0)
     price_product = Column(Float, nullable=False)
-    cart_id = Column(ForeignKey("carts.id"))
+    cart_id = Column(ForeignKey("carts.id", ondelete="CASCADE"))
     cart = relationship("Cart", foreign_keys="CartProduct.cart_id")
     final_price = Column(Float, nullable=False)
 
@@ -142,10 +154,10 @@ class OrderToSupplier(Base):
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     incoming_number = Column(String(64), index=True)
-    supplier_name = Column(ForeignKey("supplier.name"))
+    supplier_name = Column(ForeignKey("supplier.name", ondelete="NULL"))
     supplier = relationship("Supplier", foreign_keys="OrderToSupplier.supplier_name", lazy='joined')
     order_date = Column(DateTime, default=datetime.now)
-    arrivals = relationship("Arrival")
+    arrivals = relationship("Arrival", cascade="all, delete", passive_deletes=True)
 
 
 class Arrival(Base):
@@ -153,8 +165,9 @@ class Arrival(Base):
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     date = Column(DateTime(), default=datetime.now)
-    order_number = Column(ForeignKey("order_to_supplier.incoming_number"))
-    order = relationship("OrderToSupplier", foreign_keys="Arrival.order_number", lazy='joined')
+    order_number = Column(ForeignKey("order_to_supplier.incoming_number", ondelete="CASCADE"))
+    order = relationship("OrderToSupplier", foreign_keys="Arrival.order_number", lazy='joined',
+                         back_populates="arrivals")
     product = Column(String(128), index=True, nullable=False)
     remainder = Column(Float, nullable=False)
     price = Column(Float, nullable=False)

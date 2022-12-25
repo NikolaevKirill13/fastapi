@@ -21,6 +21,12 @@ async def get_orders_for_supplier(db: Session, supplier: str):
     return db.query(OrderToSupplier).filter(OrderToSupplier.supplier == supplier).all()
 
 
+async def delete_order(db: Session, order: str):
+    db_delete = db.query(OrderToSupplier).filter(OrderToSupplier.incoming_number == order).one()
+    db.delete(db_delete)
+    db.commit()
+
+
 async def create_arrival(db: Session, arrival: ArrivalCreate):
     db_arrival = Arrival(order_number=arrival.order_number,
                          product=arrival.product,
