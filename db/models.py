@@ -9,7 +9,15 @@ class Preference(Base):
     __tablename__ = "preference"
 
     company_name = Column(String(64), primary_key=True)
-    # дозаполнить
+    legal_address = Column(String)
+    actual_address = Column(String)
+    phone = Column(String)
+    bank_name = Column(String)
+    bank_account = Column(Integer, help_text="номер банковского счета")
+    corr_accounts = Column(Integer)
+    bik = Column(Integer)
+    inn = Column(Integer)
+    # заполнить
 
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:
@@ -33,21 +41,11 @@ class User(Base):
     username = Column(String(64), unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
-    role = Column(ChoiceType(USERS), default='user')
-
-
-class Client(Base):
-    __tablename__ = 'client'
-
-    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    company_name = Column(String(64), unique=True, index=True, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
     phone = Column(String(32), unique=True, nullable=False)
     contact_name = Column(String(32), nullable=True)
-    hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
     discount = Column(Float(precision=2))
+    is_active = Column(Boolean, default=True)
+    role = Column(ChoiceType(USERS), default='user')
     address = relationship("Address", cascade="all, delete", passive_deletes=True)
     score = relationship("ClientScore", uselist=False)
     cart = relationship("Cart", uselist=False, cascade="all, delete", passive_deletes=True)
@@ -57,6 +55,10 @@ class FinancialDataOfOrganizations(Base):
     __tablename__ = 'document_organizations'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    username = Column(ForeignKey("user.username", ondelete="CASCADE"))
+    user = relationship("User", foreign_keys="FinancialDataOfOrganizations.username", lazy='joined')
+    company = Column(String(128), unique=True, index=True, nullable=False)
+
     # надо дозаполнить
 
 
@@ -72,18 +74,18 @@ class Address(Base):
     __tablename__ = 'addresses'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    client_id = Column(ForeignKey("client.id", ondelete="CASCADE"))
-    client = relationship("Client", foreign_keys="Address.client_id", lazy='joined')
+    username = Column(ForeignKey("user.username", ondelete="CASCADE"))
+    user = relationship("User", foreign_keys="Address.username", lazy='joined')
     address = Column(String)
     contact_phone = Column(String(24))
 
 
-class ClientScore(Base):
-    __tablename__ = 'client_score'
+class UserScore(Base):
+    __tablename__ = 'user_score'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    client_id = Column(ForeignKey("client.id", ondelete="NULL"))
-    client = relationship('Client', foreign_keys='ClientScore.client_id', lazy='joined')
+    username = Column(ForeignKey("user.username", ondelete="NULL"))
+    user = relationship('User', foreign_keys='UserScore.username', lazy='joined')
     remainder = Column(Float)
 
 
@@ -112,8 +114,8 @@ class Cart(Base):
     __tablename__ = 'carts'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    client_id = Column(ForeignKey("client.id", ondelete="CASCADE"))
-    client = relationship("Client", foreign_keys='Cart.client_id', lazy='joined')
+    username = Column(ForeignKey("user.username", ondelete="CASCADE"))
+    user = relationship("User", foreign_keys='Cart.username', lazy='joined')
     payment = Column(Boolean, default=False)
     products = relationship("CartProducts", cascade="all, delete", passive_deletes=True)
 
@@ -172,4 +174,3 @@ class Arrival(Base):
     remainder = Column(Float, nullable=False)
     price = Column(Float, nullable=False)
     received = Column(Boolean, default=False)
-
