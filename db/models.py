@@ -49,18 +49,19 @@ class User(Base):
     discount = Column(Float(precision=2))
     is_active = Column(Boolean, default=True)
     role = Column(ChoiceType(USERS), default='user')
-    address = relationship("Address", cascade="all, delete", passive_deletes=True)
-    score = relationship("ClientScore", uselist=False)
-    cart = relationship("Cart", uselist=False, cascade="all, delete", passive_deletes=True)
-    fin_data = relationship("FinancialDataOfOrganizations", cascade="all, delete", passive_deletes=True)
+    address = relationship("Address", cascade="all, delete", passive_deletes=True, back_populates="user")
+    score = relationship("ClientScore", uselist=False, back_populates="user")
+    cart = relationship("Cart", uselist=False, cascade="all, delete", passive_deletes=True, back_populates="user")
+    fin_data = relationship("FinancialDataOfClient", cascade="all, delete", passive_deletes=True, back_populates="user")
 
 
-class FinancialDataOfOrganizations(Base):
-    __tablename__ = 'document_organizations'
+class FinancialDataOfClient(Base):
+    """Финансовые данные клиента"""
+    __tablename__ = 'document_company'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     username = Column(ForeignKey("user.username", ondelete="CASCADE"))
-    user = relationship("User", foreign_keys="FinancialDataOfOrganizations.username", lazy='joined')
+    user = relationship("User", foreign_keys="FinancialDataOfClient.username", back_populates="doc_company")
     company = Column(String(128), unique=True, index=True)
     bank_name = Column(String)
     bank_account = Column(Integer, comment="номер банковского счета")
@@ -68,51 +69,56 @@ class FinancialDataOfOrganizations(Base):
     bik = Column(Integer)
     inn = Column(Integer, unique=True)
 
-    # надо дозаполнить
+    # надо дозаполнить, наверное
 
 
 class Supplier(Base):
+    """Поставщик"""
     __tablename__ = 'supplier'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     name = Column(String(64), unique=True, index=True, nullable=False)
-    orders = relationship("OrderToSupplier")
+    orders = relationship("OrderToSupplier", back_populates="supplier")
 
 
 class Address(Base):
+    """Адреса клиентов для доставки"""
     __tablename__ = 'addresses'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     username = Column(ForeignKey("user.username", ondelete="CASCADE"))
-    user = relationship("User", foreign_keys="Address.username", lazy='joined')
+    user = relationship("User", foreign_keys="Address.username", back_populates="adresses")
     address = Column(String)
     contact_phone = Column(String(24))
 
 
 class UserScore(Base):
+    """Личные счета клиентов в системе"""
     __tablename__ = 'user_score'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    username = Column(ForeignKey("user.username", ondelete="NULL"))
-    user = relationship('User', foreign_keys='UserScore.username', lazy='joined')
+    username = Column(ForeignKey("user.username", ondelete="NULL"), nullable=True)
+    user = relationship('User', foreign_keys='UserScore.username', back_populates="user_score")
     remainder = Column(Float)
 
 
 class Category(Base):
+    """Категории товаров в системе"""
     __tablename__ = "category"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     title = Column(String(64), unique=True, index=True, nullable=False)
     description = Column(String(128))
-    products = relationship("Nomenclature")
+    products = relationship("Nomenclature", back_populates="category")
 
 
 class Nomenclature(Base):
+    """Перечень товаров в системе"""
     __tablename__ = "nomenclature"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     category_title = Column(ForeignKey("category.title", ondelete="NULL"))
-    category = relationship('Category', foreign_keys='Nomenclature.category_title', lazy='joined')
+    category = relationship('Category', foreign_keys='Nomenclature.category_title', back_populates="product")
     product = Column(String(64), unique=True, index=True, nullable=False)
     description = Column(String(128))
     remainder = Column(Numeric(precision=2, asdecimal=True))
@@ -120,13 +126,14 @@ class Nomenclature(Base):
 
 
 class Cart(Base):
+    """Корзина клиента"""
     __tablename__ = 'carts'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     username = Column(ForeignKey("user.username", ondelete="CASCADE"))
-    user = relationship("User", foreign_keys='Cart.username', lazy='joined')
+    user = relationship("User", foreign_keys='Cart.username', back_populates="cart")
     payment = Column(Boolean, default=False)
-    products = relationship("CartProducts", cascade="all, delete", passive_deletes=True)
+    products = relationship("CartProducts", cascade="all, delete", passive_deletes=True, back_populates="carts")
 
     def get_products(self):
         products = self.id.cart_products
@@ -141,14 +148,15 @@ class Cart(Base):
 
 
 class CartProduct(Nomenclature):
+    """Товары в корзине клиента"""
     __tablename__ = "cart_product"
 
     product_id = Column(ForeignKey("nomenclature.product", ondelete="CASCADE"), primary_key=True, index=True)
-    products = relationship("Nomenclature", foreign_keys='CartProduct.product_id')
+    products = relationship("Nomenclature", foreign_keys='CartProduct.product_id', back_populates="cart_product")
     remainder_product = Column(Integer, default=0)
     price_product = Column(Float, nullable=False)
     cart_id = Column(ForeignKey("carts.id", ondelete="CASCADE"))
-    cart = relationship("Cart", foreign_keys="CartProduct.cart_id")
+    cart = relationship("Cart", foreign_keys="CartProduct.cart_id", back_populates="carts_product")
     final_price = Column(Float, nullable=False)
 
     def get_price(self):
@@ -161,14 +169,15 @@ class CartProduct(Nomenclature):
 
 
 class OrderToSupplier(Base):
+    """Заказы поставщику"""
     __tablename__ = 'order_to_supplier'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     incoming_number = Column(String(64), index=True)
     supplier_name = Column(ForeignKey("supplier.name", ondelete="NULL"))
-    supplier = relationship("Supplier", foreign_keys="OrderToSupplier.supplier_name", lazy='joined')
+    supplier = relationship("Supplier", foreign_keys="OrderToSupplier.supplier_name", back_populates="order")
     order_date = Column(DateTime, default=datetime.now)
-    arrivals = relationship("Arrival", cascade="all, delete", passive_deletes=True)
+    arrivals = relationship("Arrival", cascade="all, delete", passive_deletes=True, back_populates="orders")
 
 
 class Arrival(Base):
@@ -183,3 +192,23 @@ class Arrival(Base):
     remainder = Column(Float, nullable=False)
     price = Column(Float, nullable=False)
     received = Column(Boolean, default=False)
+
+
+class Test1(Base):
+    __tablename__ = 'test1'
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    username = Column(String(64), unique=True, index=True)
+    test2 = relationship("Test2")
+
+
+class Test2(Base):
+    __tablename__ = 'test2'
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    username = Column(String(64), unique=True, index=True)
+    user = Column(ForeignKey("test1.username", ondelete="SET-NULL"), nullable=True)
+    user_username = relationship("Test1", foreign_keys="Test2.user")
+
+    def set_username(self):
+        self.username = self.user
+        return self.username
+
